@@ -1,7 +1,7 @@
 {
   "bot_settings": {
     "token": "",
-    "playing_status_message": "",
-    "color_theme_rgb": ""
+    "playing_status_message": "Recode testing",
+    "color_theme_rgb": "1, 2, 3"
   }
 }
