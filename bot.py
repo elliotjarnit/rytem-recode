@@ -53,7 +53,7 @@ async def loop(ctx: commands.Context):
     if queue.loop:
         await send_message(ctx, emojis.loop + " Enabled")
     else:
-        await send_message(ctx, emojis.loop + " Enabled")
+        await send_message(ctx, emojis.loop + " Disabled")
 
 
 @bot.slash_command()
