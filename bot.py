@@ -1,8 +1,7 @@
 import discord
 import json
 
-import emojis
-import queues
+from resources import queues, emojis, songdown
 from discord.ext import commands
 
 bot = discord.Bot()
