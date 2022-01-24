@@ -40,10 +40,29 @@ async def on_ready():
 
 
 @bot.slash_command()
-async def play(ctx: commands.Context):
+async def play(ctx: commands.Context, *, search):
 
     if ctx.author.voice is None:
         await send_message(ctx, emojis.no + " You must be in a VC to use this command")
+
+    user_channel = ctx.author.voice.channel
+    if user_channel != ctx.voice_client.channel:
+        cur_channel_mem_count = len(ctx.voice_client.channel.members)
+        if cur_channel_mem_count == 1:
+            user_channel.connect()
+        else:
+            if queue.now_playing == None:
+                user_channel.connect()
+            else:
+                send_message(ctx, emojis.no + " Someone else is using the bot right now")
+
+    async with ctx.typing():
+        source = await songdown.Song.create_source(ctx, search, loop=bot.loop)
+        if not source:
+            return send_message(ctx, emojis.no + " Can't find any results for: `" + search + "`")
+        now_playing = queue.now_playing
+        queue.add(source)
+
 
 
 @bot.slash_command()
