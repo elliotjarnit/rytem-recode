@@ -1,7 +1,12 @@
 import discord
 import json
 
+import emojis
+import queues
+from discord.ext import commands
+
 bot = discord.Bot()
+queue = queues.Queue()
 
 # Config parser
 
@@ -20,7 +25,8 @@ with open("config.json") as file:
 # Send message function
 
 def send_message(ctx, message):
-    ctx.reply(embed=discord.Embed(title=message, color=config_theme))
+    a = ctx.respond(embed=discord.Embed(title=message, color=config_theme))
+    return a
 
 
 # Bot commands
@@ -35,31 +41,37 @@ async def on_ready():
 
 
 @bot.slash_command()
-async def play(ctx):
+async def play(ctx: commands.Context):
 
-    # Variables
-    author = ctx.author
-    bot_vc = ctx.voice_client.channel
-    author_vc = author.voice
+    if ctx.author.voice is None:
+        await send_message(ctx, emojis.no + " You must be in a VC to use this command")
 
 
 @bot.slash_command()
-async def skip(ctx):
+async def loop(ctx: commands.Context):
+    queue.loop = not queue.loop
+    if queue.loop:
+        await send_message(ctx, emojis.loop + " Enabled")
+    else:
+        await send_message(ctx, emojis.loop + " Enabled")
+
+
+@bot.slash_command()
+async def skip(ctx: commands.Context):
+    pass
+
+@bot.slash_command()
+async def leave(ctx: commands.Context):
     pass
 
 
 @bot.slash_command()
-async def leave(ctx):
+async def forceskip(ctx: commands.Context):
     pass
 
 
 @bot.slash_command()
-async def forceskip(ctx):
-    pass
-
-
-@bot.slash_command()
-async def top(ctx):
+async def top(ctx: commands.Context):
     pass
 
 

@@ -13,3 +13,5 @@ class Queue:
                 self.queue.pop(0)
             else:
                 self.now_playing = None
+
+
