@@ -1,4 +1,4 @@
-# Queues go here
+# This is where the queue class is stored
 
 class Queue:
     def __init__(self):
