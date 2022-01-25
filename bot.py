@@ -29,6 +29,60 @@ def send_message(ctx, message):
 
 
 # Bot commands
+class Music(commands.Cog):
+
+    def __init__(self, dis_bot):
+        self.bot = dis_bot
+
+    @commands.slash_command()
+    async def play(self, ctx: commands.Context, *, search):
+
+        if ctx.author.voice is None:
+            await send_message(ctx, emojis.no + " You must be in a VC to use this command")
+        user_channel = ctx.author.voice.channel
+        if ctx.voice_client is None:
+            await user_channel.connect()
+        if user_channel != ctx.voice_client.channel:
+            cur_channel_mem_count = len(ctx.voice_client.channel.members)
+            if cur_channel_mem_count == 1:
+                await user_channel.connect()
+            else:
+                if queue.now_playing == None:
+                    await user_channel.connect()
+                else:
+                    send_message(ctx, emojis.no + " Someone else is using the bot right now")
+
+        async with ctx.typing():
+            source = await songdown.Song.create_source(ctx, search, loop=bot.loop)
+            if not source:
+                return send_message(ctx, emojis.no + " Can't find any results for: `" + search + "`")
+            now_playing = queue.now_playing
+            queue.add(source)
+
+    @commands.slash_command()
+    async def loop(self, ctx: commands.Context):
+        queue.loop = not queue.loop
+        if queue.loop:
+            await send_message(ctx, emojis.loop + " Enabled")
+        else:
+            await send_message(ctx, emojis.loop + " Disabled")
+
+    @commands.slash_command()
+    async def skip(self, ctx: commands.Context):
+        pass
+
+    @commands.slash_command()
+    async def leave(self, ctx: commands.Context):
+        pass
+
+    @commands.slash_command()
+    async def forceskip(self, ctx: commands.Context):
+        pass
+
+    @commands.slash_command()
+    async def top(self, ctx: commands.Context):
+        pass
+
 
 @bot.event
 async def on_ready():
@@ -38,62 +92,7 @@ async def on_ready():
     for guild in bot.guilds:
         print(str(guild.name))
 
-
-@bot.slash_command()
-async def play(ctx: commands.Context, *, search):
-
-    if ctx.author.voice is None:
-        await send_message(ctx, emojis.no + " You must be in a VC to use this command")
-
-    user_channel = ctx.author.voice.channel
-    if user_channel != ctx.voice_client.channel:
-        cur_channel_mem_count = len(ctx.voice_client.channel.members)
-        if cur_channel_mem_count == 1:
-            user_channel.connect()
-        else:
-            if queue.now_playing == None:
-                user_channel.connect()
-            else:
-                send_message(ctx, emojis.no + " Someone else is using the bot right now")
-
-    async with ctx.typing():
-        source = await songdown.Song.create_source(ctx, search, loop=bot.loop)
-        if not source:
-            return send_message(ctx, emojis.no + " Can't find any results for: `" + search + "`")
-        now_playing = queue.now_playing
-        queue.add(source)
-
-
-
-@bot.slash_command()
-async def loop(ctx: commands.Context):
-    queue.loop = not queue.loop
-    if queue.loop:
-        await send_message(ctx, emojis.loop + " Enabled")
-    else:
-        await send_message(ctx, emojis.loop + " Disabled")
-
-
-@bot.slash_command()
-async def skip(ctx: commands.Context):
-    pass
-
-@bot.slash_command()
-async def leave(ctx: commands.Context):
-    pass
-
-
-@bot.slash_command()
-async def forceskip(ctx: commands.Context):
-    pass
-
-
-@bot.slash_command()
-async def top(ctx: commands.Context):
-    pass
-
-
 # Bot running stuff
-
+bot.add_cog(Music(bot))
 bot.run(config_token)
 
