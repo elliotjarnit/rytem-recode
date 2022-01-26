@@ -4,6 +4,15 @@ import yt_dlp
 import discord
 import functools
 from discord.ext import commands
+import asyncio
+
+
+class VoiceError(Exception):
+    pass
+
+
+class YTDLError(Exception):
+    pass
 
 
 class Song(discord.PCMVolumeTransformer):
@@ -31,7 +40,7 @@ class Song(discord.PCMVolumeTransformer):
 
     ytdl = yt_dlp.YoutubeDL(YTDL_OPTIONS)
 
-    def __init__(self, ctx: commands.Context, source, data, volume=0.5):
+    def __init__(self, ctx: commands.Context, source: discord.FFmpegPCMAudio, *, data: dict, volume: float = 0.5):
         super().__init__(source, volume)
 
         self.requester = ctx.author
@@ -50,10 +59,11 @@ class Song(discord.PCMVolumeTransformer):
         self.dislikes = data.get("dislike_count")
         self.stream_url = data.get("url")
 
-    async def create_data(self, ctx: commands.Context, search, *, loop=None):
-
-        if "https://" in search:
-            partial = functools.partial(self.ytdl.extract_info, search, download=False, process=False)
+    @classmethod
+    async def create_data(cls, ctx: commands.Context, search: str, *, loop: asyncio.BaseEventLoop = None):
+        print(search)
+        if search.find("https://") != -1:
+            partial = functools.partial(cls.ytdl.extract_info, search, download=False, process=False)
             data = await loop.run_in_executor(None, partial)
 
             if data is None:
@@ -74,7 +84,7 @@ class Song(discord.PCMVolumeTransformer):
             webpage_url = process_info["webpage_url"]
         else:
             webpage_url = search
-        partial = functools.partial(self.ytdl.extract_info, webpage_url, download=False)
+        partial = functools.partial(cls.ytdl.extract_info, webpage_url, download=False)
         processed_info = await loop.run_in_executor(None, partial)
         playlist = False
 
@@ -89,4 +99,11 @@ class Song(discord.PCMVolumeTransformer):
             for entry in processed_info["entries"]:
                 info.append(entry)
 
-        return self(ctx, discord.FFmpegPCMAudio(info["url"], **self.FFMPEG_OPTIONS), data=info)
+        if playlist:
+            return_list = []
+            for playlist_obj in info:
+                return_list.append(cls(ctx, discord.FFmpegPCMAudio(playlist_obj["url"], **cls.FFMPEG_OPTIONS), data=playlist_obj))
+            return return_list
+        else:
+            return cls(ctx, discord.FFmpegPCMAudio(info["url"], **cls.FFMPEG_OPTIONS), data=info)
+

@@ -35,7 +35,7 @@ class Music(commands.Cog):
         self.bot = dis_bot
 
     @commands.slash_command(description="Plays a song")
-    async def play(self, ctx: commands.Context, *, song):
+    async def play(self, ctx: commands.Context, *, song: discord.commands.Option(str, "Song or url to play")):
 
         if ctx.author.voice is None:
             await send_message(ctx, emojis.no + " You must be in a VC to use this command")
@@ -80,15 +80,15 @@ class Music(commands.Cog):
         pass
 
     @commands.slash_command(description="Displays top listeners for specified artist (DJ role required)")
-    async def topartist(self, ctx: commands.Context, *, artist):
+    async def topartist(self, ctx: commands.Context, *, artist: discord.commands.Option(str, "Artist's leader to display")):
         pass
 
     @commands.slash_command(description="Displays top listeners for specified song (DJ role required)")
-    async def topsong(self, ctx: commands.Context, *, song):
+    async def topsong(self, ctx: commands.Context, *, song: discord.commands.Option(str, "Song's leader to display")):
         pass
 
     @commands.slash_command(description="Displays top listeners for specified album (DJ role required)")
-    async def topalbum(self, ctx: commands.Context, *, album):
+    async def topalbum(self, ctx: commands.Context, *, album: discord.commands.Option(str, "Album's leader to display")):
         pass
 
 
@@ -96,9 +96,17 @@ class Music(commands.Cog):
 async def on_ready():
     await bot.change_presence(activity=discord.Game(name=config_status))
 
-    print("Rytem is online!\n\nBot Name: " + bot.user.name + "\nBot ID: " + str(bot.user.id) + "\n\nIn servers:")
+    print("Rytem is online!\n\nBot Name: " + bot.user.name + "\nBot ID: " + str(bot.user.id) + "\n\nIn servers:" + '\033[1m')
     for guild in bot.guilds:
         print(str(guild.name))
+    print('\033[0m' + "\n\nRegisted Commands:" + '\033[1m')
+    name_commands = []
+    for command in bot.commands:
+        name_commands.append(command.qualified_name)
+    name_commands.sort()
+    for command in name_commands:
+        print(command)
+    print('\033[0m')
 
 # Bot running stuff
 bot.add_cog(Music(bot))
